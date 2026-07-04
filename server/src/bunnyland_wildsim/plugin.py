@@ -31,7 +31,7 @@ from .foraging import FORAGE_ACTION_DEFINITIONS, FORAGE_ACTION_HANDLERS
 from .fragments import wildsim_fragments
 from .install import install_wildsim
 
-PLUGIN_ID = "bunnyland_wildsim"
+PLUGIN_ID = "bunnyland.wildsim"
 
 
 def plugin() -> Plugin:
