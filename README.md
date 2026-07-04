@@ -1,7 +1,6 @@
 # Bunnyland Wildsim
 
-Out-of-tree [Bunnyland](https://github.com/thalismind/bunnyland-server) plugin that adds a
-Sims-4-expansion-sized **wilderness survival** pack. It layers four cohesive mechanics onto
+Out-of-tree [Bunnyland](https://github.com/thalismind/bunnyland-server) plugin that adds an expansion-pack-sized **wilderness survival** pack. It layers four cohesive mechanics onto
 the core Relics ECS, reusing the server's light, weather, needs/meter, and health systems:
 
 - **Scent & trails** — creatures leave a decaying scent in each room they pass through;
