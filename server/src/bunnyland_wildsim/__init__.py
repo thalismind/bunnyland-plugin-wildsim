@@ -27,13 +27,38 @@ from .events import (
     FireStokedEvent,
     ForagedEvent,
     FreezingDamageEvent,
+    GameBaggedEvent,
+    GameTrappedEvent,
+    HideTannedEvent,
+    HuntFoiledEvent,
+    PredatorIncursionEvent,
+    TrapSetEvent,
 )
 from .foraging import ForageHandler
 from .fragments import wildsim_fragments
+from .hunting import HuntHandler, hunt_score
 from .install import install_wildsim
+from .luck import luck_bonus
 from .plugin import PLUGIN_ID, bunnyland_plugins, plugin
+from .predators import (
+    PredatorIncursionConsequence,
+    PredatorPressureComponent,
+    ensure_predator_pressure,
+    install_predators,
+)
 from .scent import ScentConsequence, strongest_adjacent_scent, tracker_carrier
+from .seasons import current_season, scarcity_fragment, season_scarcity
 from .spatial import holder_of, room_of
+from .tanning import HideComponent, PeltComponent, TanHideHandler, total_insulation
+from .trapping import (
+    CheckTrapHandler,
+    SetTrapHandler,
+    TrapComponent,
+    TrappedIn,
+    TrappingConsequence,
+    install_trapping,
+)
+from .trophies import TrophyComponent, spawn_game_meat, spawn_hide
 from .warmth import WarmthConsequence, lit_campfire_in_room, room_chill
 
 __all__ = [
@@ -41,31 +66,60 @@ __all__ = [
     "BuildFireHandler",
     "CampfireComponent",
     "CampfireConsequence",
+    "CheckTrapHandler",
     "FireBuiltEvent",
     "FireBurnedOutEvent",
     "FireStokedEvent",
     "ForageHandler",
     "ForagedEvent",
     "FreezingDamageEvent",
+    "GameBaggedEvent",
+    "GameTrappedEvent",
+    "HideComponent",
+    "HideTannedEvent",
+    "HuntFoiledEvent",
+    "HuntHandler",
+    "PeltComponent",
+    "PredatorIncursionConsequence",
+    "PredatorIncursionEvent",
+    "PredatorPressureComponent",
     "ResourceNodeComponent",
     "ScentComponent",
     "ScentConsequence",
     "ScentTrailComponent",
+    "SetTrapHandler",
     "StokeFireHandler",
+    "TanHideHandler",
     "TrackerComponent",
+    "TrapComponent",
+    "TrapSetEvent",
+    "TrappedIn",
+    "TrappingConsequence",
+    "TrophyComponent",
     "WarmthComponent",
     "WarmthConsequence",
     "WildWorldgenHook",
     "bunnyland_plugins",
+    "current_season",
+    "ensure_predator_pressure",
     "holder_of",
+    "hunt_score",
     "install_campfire",
+    "install_predators",
+    "install_trapping",
     "install_wildsim",
     "lit_campfire_in_room",
+    "luck_bonus",
     "plugin",
     "room_chill",
     "room_of",
+    "scarcity_fragment",
+    "season_scarcity",
+    "spawn_game_meat",
+    "spawn_hide",
     "strongest_adjacent_scent",
     "tracker_carrier",
+    "total_insulation",
     "warmth_band",
     "wildsim_fragments",
 ]

@@ -22,6 +22,7 @@ from relics import Entity, World
 from .components import CampfireComponent, WarmthComponent, warmth_band
 from .events import FreezingDamageEvent
 from .spatial import room_of
+from .tanning import total_insulation
 
 SECONDS_PER_HOUR = 3600.0
 
@@ -109,6 +110,9 @@ class WarmthConsequence:
         hours = max(0.0, (epoch - last) / SECONDS_PER_HOUR)
         room = room_of(world, character.id)
         chill = room_chill(world, room)
+        if chill > 0.0:
+            # Carried pelts blunt the cold, but can never turn exposure into warming.
+            chill = max(0.0, chill - total_insulation(world, character))
         if chill >= 0.0:
             delta = -warmth.drain_rate * chill * hours
         else:

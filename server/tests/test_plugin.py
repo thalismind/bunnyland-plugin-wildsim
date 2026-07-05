@@ -5,10 +5,15 @@ from bunnyland.plugins import apply_plugins, load_modules
 
 from bunnyland_wildsim import (
     CampfireComponent,
+    HideComponent,
+    PeltComponent,
+    PredatorPressureComponent,
     ResourceNodeComponent,
     ScentComponent,
     ScentTrailComponent,
     TrackerComponent,
+    TrapComponent,
+    TrophyComponent,
     WarmthComponent,
     WildWorldgenHook,
     wildsim_fragments,
@@ -36,9 +41,33 @@ def test_plugin_declares_its_contributions():
     assert wildsim_fragments in plugin.content.prompt_fragments
 
 
+def test_plugin_is_v2():
+    plugin = load_modules(["bunnyland_wildsim"])[0]
+    assert plugin.version == "0.2.0"
+    for component in (
+        TrapComponent,
+        HideComponent,
+        PeltComponent,
+        TrophyComponent,
+        PredatorPressureComponent,
+    ):
+        assert component in plugin.ecs.components
+    # Optional synergy with the fortune pack is a recommendation, never a hard requirement.
+    assert plugin.dependencies.recommends == ("bunnyland.fortunesim",)
+    assert plugin.dependencies.requires == ()
+
+
 def test_plugin_applies_and_registers_verbs():
     actor = WorldActor()
     applied = apply_plugins(load_modules(["bunnyland_wildsim"]), actor)
     assert applied[0].id == PLUGIN_ID
     command_types = {definition.command_type for definition in actor.action_definitions()}
-    assert {"build-fire", "stoke-fire", "forage"} <= command_types
+    assert {
+        "build-fire",
+        "stoke-fire",
+        "forage",
+        "hunt",
+        "set-trap",
+        "check-trap",
+        "tan-hide",
+    } <= command_types

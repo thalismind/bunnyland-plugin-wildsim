@@ -19,6 +19,7 @@ from bunnyland.core.events import (
 from bunnyland.core.world_actor import WorldActor
 
 from .components import ResourceNodeComponent, ScentComponent
+from .predators import ensure_predator_pressure
 
 #: Predator terms → a strong scent that reads as ``predator``.
 PREDATOR_TERMS = (
@@ -101,7 +102,12 @@ def _biome_resource(biome: str) -> tuple[str, str] | None:
 
 
 class WildWorldgenHook:
-    """Tag generated creatures with scent and seed forageable nodes into biomes."""
+    """Tag generated creatures with scent, seed forage nodes, and arm the predator pressure.
+
+    Seeding the v2 :class:`~bunnyland_wildsim.predators.PredatorPressureComponent` here means
+    generated worlds get seasonal predator incursions with no extra setup — the newest
+    mechanic ships with the pack's world content.
+    """
 
     def subscribe(self, actor: WorldActor) -> None:
         self._actor = actor
@@ -124,6 +130,7 @@ class WildWorldgenHook:
             replace_component(entity, ScentComponent(strength=1.0, kind="prey"))
 
     def _on_room(self, event: RoomGeneratedEvent) -> None:
+        ensure_predator_pressure(self._actor.world)
         entity = self._entity(event.entity_id)
         if entity is None or entity.has_component(ResourceNodeComponent):
             return
