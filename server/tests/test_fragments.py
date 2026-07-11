@@ -13,7 +13,7 @@ from bunnyland.core import (
     spawn_entity,
 )
 from bunnyland.core.ecs import replace_component
-from bunnyland.mechanics.meter import with_value
+from bunnyland.foundation.meters.mechanics import with_value
 
 from bunnyland_wildsim import (
     CampfireComponent,

@@ -75,9 +75,11 @@ def _species(creature: Entity) -> str:
 def _wound(hunter: Entity, damage: float) -> float:
     """Apply hunting damage to the hunter's health; return the resulting health value."""
     if damage <= 0.0 or not hunter.has_component(HealthComponent):
-        return hunter.get_component(HealthComponent).current if (
-            hunter.has_component(HealthComponent)
-        ) else 0.0
+        return (
+            hunter.get_component(HealthComponent).current
+            if (hunter.has_component(HealthComponent))
+            else 0.0
+        )
     health = hunter.get_component(HealthComponent)
     updated = replace(health, current=health.current - damage)
     replace_component(hunter, updated)

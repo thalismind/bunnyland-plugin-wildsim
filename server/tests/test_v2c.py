@@ -12,8 +12,8 @@ from bunnyland.core import (
     WorldActor,
     spawn_entity,
 )
-from bunnyland.mechanics.environment import CalendarComponent
-from bunnyland.mechanics.meter import Meter
+from bunnyland.foundation.environment.mechanics import CalendarComponent
+from bunnyland.foundation.meters.mechanics import Meter
 
 from bunnyland_wildsim.components import (
     CampfireComponent,

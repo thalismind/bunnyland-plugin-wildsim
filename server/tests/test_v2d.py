@@ -13,7 +13,7 @@ from bunnyland.core import (
 )
 from bunnyland.core.commands import CommandCost, Lane, build_submitted_command
 from bunnyland.core.handlers import HandlerContext
-from bunnyland.mechanics.meter import Meter
+from bunnyland.foundation.meters.mechanics import Meter
 from bunnyland.prompts.context import ComponentPromptContext, PromptPerspective
 
 from bunnyland_wildsim.components import CampfireComponent, ResourceNodeComponent, WarmthComponent

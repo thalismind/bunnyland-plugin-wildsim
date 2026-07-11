@@ -6,7 +6,7 @@ depending on any of them:
 - :class:`TrophyComponent` carries a museum-style ``category``/``rarity`` (the donatable
   ``Collectible`` shape) **and** a ``weight`` score (the festival biggest-game
   ``ContestEntry`` shape). A museum or festival pack reads these fields off the item.
-- Game meat additionally carries the core :class:`~bunnyland.mechanics.consumables.FoodComponent`,
+- Game meat additionally carries Foundation Consumables' ``FoodComponent``,
   so it feeds core hunger through the ordinary ``eat`` verb rather than a private meter.
 
 Both spawn helpers are pure factories: deterministic, no randomness, no time.
@@ -15,7 +15,7 @@ Both spawn helpers are pure factories: deterministic, no randomness, no time.
 from __future__ import annotations
 
 from bunnyland.core import IdentityComponent, PortableComponent, spawn_entity
-from bunnyland.mechanics.consumables import FoodComponent
+from bunnyland.foundation.consumables.components import FoodComponent
 from bunnyland.prompts.context import ComponentPromptContext
 from pydantic.dataclasses import dataclass
 from relics import Component, Entity, World

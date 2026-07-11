@@ -15,9 +15,9 @@ from bunnyland.core import (
 )
 from bunnyland.core.commands import CommandCost, Lane, build_submitted_command
 from bunnyland.core.handlers import HandlerContext
-from bunnyland.mechanics.consumables import FoodComponent
-from bunnyland.mechanics.environment import CalendarComponent
-from bunnyland.mechanics.storyteller import IncidentComponent
+from bunnyland.foundation.consumables.components import FoodComponent
+from bunnyland.foundation.environment.mechanics import CalendarComponent
+from bunnyland.foundation.storyteller.mechanics import IncidentComponent
 
 from bunnyland_wildsim.components import ScentComponent, TrackerComponent
 from bunnyland_wildsim.events import (

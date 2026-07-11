@@ -11,7 +11,7 @@ Components are frozen; mutate them by swapping whole values with
 
 from __future__ import annotations
 
-from bunnyland.mechanics.meter import Meter, band
+from bunnyland.foundation.meters.mechanics import Meter, band
 from bunnyland.prompts.context import ComponentPromptContext
 from pydantic.dataclasses import dataclass
 from relics import Component
@@ -62,7 +62,7 @@ _WARMTH_PHRASES = {
 def warmth_band(meter: Meter) -> str:
     """Coarse warmth band (``warm`` > ``chilly`` > ``cold`` > ``freezing``).
 
-    Inverted from :func:`bunnyland.mechanics.meter.band` because low warmth is the danger.
+    Inverted from Foundation Meters' ``band`` because low warmth is the danger.
     """
     if meter.value <= meter.crisis_at:
         return "freezing"

@@ -1,27 +1,9 @@
-"""World-generation enrichment for the wilderness pack.
+"""Declarative scent and forage-node generation enrichment."""
 
-Two classifications run off generated entities' semantic text:
-
-- Generated **creatures** whose tags/description read as predators or prey get a
-  :class:`ScentComponent` so scent trails and trackers have something to follow.
-- Generated **rooms** get a biome-appropriate :class:`ResourceNodeComponent` so foraging
-  has something to yield — outdoor rooms only, and only for biomes the pack understands.
-"""
-
-from __future__ import annotations
-
-from bunnyland.core.ecs import parse_entity_id, replace_component
-from bunnyland.core.events import (
-    CharacterGeneratedEvent,
-    GeneratedEntityEvent,
-    RoomGeneratedEvent,
-)
-from bunnyland.core.world_actor import WorldActor
+from bunnyland.core.generation import GenerationDelta, GenerationRequest
 
 from .components import ResourceNodeComponent, ScentComponent
-from .predators import ensure_predator_pressure
 
-#: Predator terms → a strong scent that reads as ``predator``.
 PREDATOR_TERMS = (
     "wolf",
     "bear",
@@ -36,8 +18,6 @@ PREDATOR_TERMS = (
     "hyena",
     "jackal",
 )
-
-#: Prey/animal terms → a lighter scent that reads as ``prey``.
 PREY_TERMS = (
     "rabbit",
     "hare",
@@ -54,9 +34,7 @@ PREY_TERMS = (
     "animal",
     "creature",
 )
-
-#: Biome substring → (resource name, yield kind). First match wins.
-BIOME_RESOURCES: tuple[tuple[str, str, str], ...] = (
+BIOME_RESOURCES = (
     ("forest", "berries", "food"),
     ("wood", "berries", "food"),
     ("jungle", "wild fruit", "food"),
@@ -75,72 +53,43 @@ BIOME_RESOURCES: tuple[tuple[str, str, str], ...] = (
 )
 
 
-def _text(event: GeneratedEntityEvent) -> str:
-    generation = event.generation
+def _text(request):
     return " ".join(
-        (
-            event.entity_kind,
-            generation.description,
-            *generation.tags,
-            *generation.wants,
-            *generation.needs,
-        )
+        (request.source_key, request.entity_kind, request.description, *request.tags)
     ).casefold()
 
 
-def _mentions(event: GeneratedEntityEvent, terms: tuple[str, ...]) -> str | None:
-    text = _text(event)
-    return next((term for term in terms if term in text), None)
+class WildGenerationEnricher:
+    capabilities: tuple[str, ...] = ()
+
+    def enrich(self, request: GenerationRequest) -> GenerationDelta:
+        existing = tuple(request.context.get("base_components", ()))
+        text = _text(request)
+        if request.entity_kind == "character" and not any(
+            isinstance(item, ScentComponent) for item in existing
+        ):
+            if any(term in text for term in PREDATOR_TERMS):
+                return GenerationDelta(components=(ScentComponent(strength=1.5, kind="predator"),))
+            if any(term in text for term in PREY_TERMS):
+                return GenerationDelta(components=(ScentComponent(strength=1.0, kind="prey"),))
+        if request.entity_kind == "room" and not any(
+            isinstance(item, ResourceNodeComponent) for item in existing
+        ):
+            room = next(
+                (item for item in existing if item.__class__.__name__ == "RoomComponent"), None
+            )
+            if room is None or room.indoor:
+                return GenerationDelta()
+            folded = room.biome.casefold()
+            match = next(
+                ((resource, kind) for term, resource, kind in BIOME_RESOURCES if term in folded),
+                None,
+            )
+            if match is not None:
+                return GenerationDelta(
+                    components=(ResourceNodeComponent(resource=match[0], yield_kind=match[1]),)
+                )
+        return GenerationDelta()
 
 
-def _biome_resource(biome: str) -> tuple[str, str] | None:
-    folded = biome.casefold()
-    for term, resource, kind in BIOME_RESOURCES:
-        if term in folded:
-            return resource, kind
-    return None
-
-
-class WildWorldgenHook:
-    """Tag generated creatures with scent, seed forage nodes, and arm the predator pressure.
-
-    Seeding the v2 :class:`~bunnyland_wildsim.predators.PredatorPressureComponent` here means
-    generated worlds get seasonal predator incursions with no extra setup — the newest
-    mechanic ships with the pack's world content.
-    """
-
-    def subscribe(self, actor: WorldActor) -> None:
-        self._actor = actor
-        actor.bus.subscribe(CharacterGeneratedEvent, self._on_character)
-        actor.bus.subscribe(RoomGeneratedEvent, self._on_room)
-
-    def _entity(self, entity_id: str):
-        parsed = parse_entity_id(entity_id)
-        if parsed is None or not self._actor.world.has_entity(parsed):
-            return None
-        return self._actor.world.get_entity(parsed)
-
-    def _on_character(self, event: CharacterGeneratedEvent) -> None:
-        entity = self._entity(event.entity_id)
-        if entity is None or entity.has_component(ScentComponent):
-            return
-        if _mentions(event, PREDATOR_TERMS):
-            replace_component(entity, ScentComponent(strength=1.5, kind="predator"))
-        elif _mentions(event, PREY_TERMS):
-            replace_component(entity, ScentComponent(strength=1.0, kind="prey"))
-
-    def _on_room(self, event: RoomGeneratedEvent) -> None:
-        ensure_predator_pressure(self._actor.world)
-        entity = self._entity(event.entity_id)
-        if entity is None or entity.has_component(ResourceNodeComponent):
-            return
-        if event.indoor:
-            return
-        resource = _biome_resource(event.biome)
-        if resource is None:
-            return
-        name, kind = resource
-        replace_component(entity, ResourceNodeComponent(resource=name, yield_kind=kind))
-
-
-__all__ = ["BIOME_RESOURCES", "PREDATOR_TERMS", "PREY_TERMS", "WildWorldgenHook"]
+__all__ = ["BIOME_RESOURCES", "PREDATOR_TERMS", "PREY_TERMS", "WildGenerationEnricher"]

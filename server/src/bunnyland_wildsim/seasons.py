@@ -1,7 +1,7 @@
 """Seasonal scarcity: game and predators both grow lean and hungry in the cold months.
 
 This module never re-derives the calendar; it reads the core
-:class:`~bunnyland.mechanics.environment.CalendarComponent` season and maps it to a
+:class:`~bunnyland.foundation.environment.mechanics.CalendarComponent` season and maps it to a
 ``[0, 1]`` scarcity pressure. Hunting, trapping, and predator incursions each fold that
 pressure into their own deterministic outcomes, so one core input (the season) ripples
 across the whole pack.
@@ -9,7 +9,7 @@ across the whole pack.
 
 from __future__ import annotations
 
-from bunnyland.mechanics.environment import CalendarComponent
+from bunnyland.foundation.environment.mechanics import CalendarComponent
 from relics import World
 
 #: Scarcity per season (higher is leaner). Winter is hardest; summer is plentiful.

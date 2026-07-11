@@ -16,7 +16,7 @@ from bunnyland.core.commands import CommandCost, Lane, build_submitted_command
 from bunnyland.core.components import SuspendedComponent
 from bunnyland.core.ecs import replace_component
 from bunnyland.core.handlers import HandlerContext
-from bunnyland.mechanics.environment import CalendarComponent
+from bunnyland.foundation.environment.mechanics import CalendarComponent
 from bunnyland.prompts.context import ComponentPromptContext, PromptPerspective
 
 from bunnyland_wildsim.components import ScentComponent

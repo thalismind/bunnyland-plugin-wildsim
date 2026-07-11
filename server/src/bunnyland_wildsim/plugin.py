@@ -20,7 +20,7 @@ from .components import (
     TrackerComponent,
     WarmthComponent,
 )
-from .enrichment import WildWorldgenHook
+from .enrichment import WildGenerationEnricher
 from .events import (
     FireBuiltEvent,
     FireBurnedOutEvent,
@@ -115,7 +115,7 @@ def plugin() -> Plugin:
         ),
         content=ContentContribution(
             prompt_fragments=(wildsim_fragments,),
-            worldgen_hooks=(WildWorldgenHook,),
+            generation_enrichers=(WildGenerationEnricher(),),
         ),
     )
 

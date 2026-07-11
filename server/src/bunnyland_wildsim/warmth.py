@@ -15,8 +15,8 @@ from bunnyland.core import HealthComponent, LightComponent, RoomComponent, conte
 from bunnyland.core.components import DeadComponent, SuspendedComponent
 from bunnyland.core.ecs import replace_component
 from bunnyland.core.events import DomainEvent, EventVisibility, event_base
-from bunnyland.mechanics.environment import WeatherComponent
-from bunnyland.mechanics.meter import with_value
+from bunnyland.foundation.environment.mechanics import WeatherComponent
+from bunnyland.foundation.meters.mechanics import with_value
 from relics import Entity, World
 
 from .components import CampfireComponent, WarmthComponent, warmth_band
@@ -97,8 +97,8 @@ class WarmthConsequence:
 
     def process(self, world: World, epoch: int) -> list[DomainEvent]:
         events: list[DomainEvent] = []
-        query = world.query().with_all([WarmthComponent]).with_none(
-            [SuspendedComponent, DeadComponent]
+        query = (
+            world.query().with_all([WarmthComponent]).with_none([SuspendedComponent, DeadComponent])
         )
         for character in query.execute_entities():
             events.extend(self._update(world, epoch, character))
@@ -118,9 +118,7 @@ class WarmthConsequence:
         else:
             delta = warmth.warm_rate * (-chill) * hours
         new_meter = with_value(warmth.meter, warmth.meter.value + delta)
-        replace_component(
-            character, replace(warmth, meter=new_meter, last_updated_epoch=epoch)
-        )
+        replace_component(character, replace(warmth, meter=new_meter, last_updated_epoch=epoch))
         return self._maybe_freeze(world, epoch, character, warmth, new_meter, hours)
 
     def _maybe_freeze(self, world, epoch, character, warmth, new_meter, hours) -> list[DomainEvent]:

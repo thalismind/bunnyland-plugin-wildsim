@@ -35,9 +35,11 @@ def _creature(world, room, *, strength=1.0):
 
 
 def _trail(room):
-    return room.get_component(ScentTrailComponent).strength if room.has_component(
-        ScentTrailComponent
-    ) else 0.0
+    return (
+        room.get_component(ScentTrailComponent).strength
+        if room.has_component(ScentTrailComponent)
+        else 0.0
+    )
 
 
 def test_creature_deposits_a_trail_in_its_room():

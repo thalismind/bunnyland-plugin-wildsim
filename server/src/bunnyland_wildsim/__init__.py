@@ -20,7 +20,7 @@ from .components import (
     WarmthComponent,
     warmth_band,
 )
-from .enrichment import WildWorldgenHook
+from .enrichment import WildGenerationEnricher
 from .events import (
     FireBuiltEvent,
     FireBurnedOutEvent,
@@ -98,7 +98,7 @@ __all__ = [
     "TrophyComponent",
     "WarmthComponent",
     "WarmthConsequence",
-    "WildWorldgenHook",
+    "WildGenerationEnricher",
     "bunnyland_plugins",
     "current_season",
     "ensure_predator_pressure",

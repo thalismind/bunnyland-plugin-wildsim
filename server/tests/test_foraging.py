@@ -129,9 +129,7 @@ def test_forage_rejects_unreachable_explicit_target():
         [RoomComponent(title="Far grove", biome="forest"), ResourceNodeComponent()],
     )
 
-    result = ForageHandler().execute(
-        _ctx(actor), _cmd(forager.id, {"target_id": str(far_room.id)})
-    )
+    result = ForageHandler().execute(_ctx(actor), _cmd(forager.id, {"target_id": str(far_room.id)}))
 
     assert not result.ok
     assert result.reason == "that is not within reach"
@@ -154,9 +152,7 @@ def test_forage_explicit_node_item_in_room():
     )
     room.add_relationship(Contains(mode=ContainmentMode.ROOM_CONTENT), bush.id)
 
-    result = ForageHandler().execute(
-        _ctx(actor), _cmd(forager.id, {"target_id": str(bush.id)})
-    )
+    result = ForageHandler().execute(_ctx(actor), _cmd(forager.id, {"target_id": str(bush.id)}))
 
     assert result.ok
     assert "figs" in _inventory_names(actor, forager)

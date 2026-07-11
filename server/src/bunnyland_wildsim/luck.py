@@ -19,9 +19,7 @@ try:  # Soft, optional: the fortune pack may not be installed.
     from bunnyland_fortunesim import effective_luck as _effective_luck
 except ImportError:  # Standalone: no fortune pack, so luck is always neutral.
     _effective_luck = None
-    logger.warning(
-        "bunnyland_fortunesim not installed; wildsim hunts run without a luck bias."
-    )
+    logger.warning("bunnyland_fortunesim not installed; wildsim hunts run without a luck bias.")
 
 #: How strongly luck tilts a deterministic outcome score. Gentle by design.
 LUCK_WEIGHT = 0.05

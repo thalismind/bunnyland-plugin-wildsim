@@ -4,8 +4,8 @@ When game grows scarce the predators come down hungry too. :class:`PredatorIncur
 paces itself like the core storyteller (an interval and a next-due epoch) and, when a lean
 season pushes pressure over the line, spawns a predator into an occupied room. Crucially it
 does not roll its own private incident type: it stamps the spawned threat with the **core**
-:class:`~bunnyland.mechanics.storyteller.IncidentComponent` and links it with the core
-:class:`~bunnyland.mechanics.storyteller.IncidentSpawned` edge, so the storyteller's own
+:class:`~bunnyland.foundation.storyteller.mechanics.IncidentComponent` and links it with the core
+:class:`~bunnyland.foundation.storyteller.mechanics.IncidentSpawned` edge, so the storyteller's own
 auto-resolution closes the incident once the predator is dealt with. The pack registers into
 the shared world-pressure budget rather than reinventing one.
 """
@@ -28,7 +28,7 @@ from bunnyland.core import (
 from bunnyland.core.components import DeadComponent, SuspendedComponent
 from bunnyland.core.ecs import replace_component
 from bunnyland.core.events import DomainEvent, EventVisibility, event_base
-from bunnyland.mechanics.storyteller import IncidentComponent, IncidentSpawned
+from bunnyland.foundation.storyteller.mechanics import IncidentComponent, IncidentSpawned
 from pydantic.dataclasses import dataclass
 from relics import Component, Entity, World
 
