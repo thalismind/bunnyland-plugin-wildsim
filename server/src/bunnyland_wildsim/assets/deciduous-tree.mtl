@@ -1,0 +1,8 @@
+newmtl Trunk
+Kd 0.32 0.20 0.10
+
+newmtl Canopy
+Kd 0.20 0.52 0.22
+
+newmtl CanopyLight
+Kd 0.32 0.64 0.25

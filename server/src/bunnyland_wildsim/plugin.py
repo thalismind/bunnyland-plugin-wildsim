@@ -38,6 +38,7 @@ from .foraging import FORAGE_ACTION_DEFINITIONS, FORAGE_ACTION_HANDLERS
 from .fragments import wildsim_fragments
 from .hunting import HUNTING_ACTION_DEFINITIONS, HUNTING_ACTION_HANDLERS
 from .install import install_wildsim
+from .integration_3d import install_wildsim_3d
 from .predators import PredatorPressureComponent, install_predators
 from .tanning import (
     TANNING_ACTION_DEFINITIONS,
@@ -64,7 +65,9 @@ def plugin() -> Plugin:
         version="0.2.0",
         default_enabled=True,
         # Optional synergy: fortunesim's luck gently nudges hunt/trap odds when present.
-        dependencies=DependencyContribution(recommends=("bunnyland.fortunesim",)),
+        dependencies=DependencyContribution(
+            recommends=("bunnyland.fortunesim",), integrates_with=("bunnyland.3d",)
+        ),
         ecs=EcsContribution(
             components=(
                 ScentComponent,
@@ -112,6 +115,7 @@ def plugin() -> Plugin:
         ),
         runtime=RuntimeContribution(
             service_factories=(install_wildsim, install_trapping, install_predators),
+            integration_factories=(install_wildsim_3d,),
         ),
         content=ContentContribution(
             prompt_fragments=(wildsim_fragments,),

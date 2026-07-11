@@ -1,0 +1,9 @@
+newmtl Foliage
+Kd 0.18 0.48 0.19
+
+newmtl DarkFoliage
+Kd 0.10 0.34 0.13
+
+newmtl Berry
+Kd 0.48 0.06 0.18
+Ns 20
