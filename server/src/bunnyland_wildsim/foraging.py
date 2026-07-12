@@ -17,8 +17,8 @@ from bunnyland.core import (
     PortableComponent,
     spawn_entity,
 )
-from bunnyland.core.actions import ActionArgument, ActionDefinition
-from bunnyland.core.commands import CommandCost, Lane, SubmittedCommand
+from bunnyland.core.actions import ActionArgument, ActionDefinition, ActionEffort, effort_cost
+from bunnyland.core.commands import Lane, SubmittedCommand
 from bunnyland.core.ecs import container_of, replace_component
 from bunnyland.core.events import EventVisibility
 from bunnyland.core.handlers import (
@@ -108,7 +108,7 @@ FORAGE_DEF = ActionDefinition(
     title="Forage",
     description="Gather food or materials from a resource node (defaults to this room).",
     lane=Lane.WORLD,
-    cost=CommandCost(action=1),
+    cost=effort_cost(action=ActionEffort.ROUTINE),
     arguments={
         "target_id": ActionArgument(
             title="Source",

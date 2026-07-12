@@ -19,8 +19,8 @@ from bunnyland.core import (
     contents,
     spawn_entity,
 )
-from bunnyland.core.actions import ActionArgument, ActionDefinition
-from bunnyland.core.commands import CommandCost, Lane, SubmittedCommand
+from bunnyland.core.actions import ActionArgument, ActionDefinition, ActionEffort, effort_cost
+from bunnyland.core.commands import Lane, SubmittedCommand
 from bunnyland.core.ecs import container_of, replace_component
 from bunnyland.core.events import DomainEvent, EventVisibility, event_base
 from bunnyland.core.handlers import (
@@ -240,7 +240,7 @@ SET_TRAP_DEF = ActionDefinition(
     title="Set trap",
     description="Set a snare in your current room to catch passing game.",
     lane=Lane.WORLD,
-    cost=CommandCost(action=1),
+    cost=effort_cost(action=ActionEffort.ROUTINE),
     arguments={},
 )
 
@@ -249,7 +249,7 @@ CHECK_TRAP_DEF = ActionDefinition(
     title="Check trap",
     description="Harvest a trap that has caught something.",
     lane=Lane.WORLD,
-    cost=CommandCost(action=1),
+    cost=effort_cost(action=ActionEffort.ROUTINE),
     arguments={
         "trap_id": ActionArgument(
             title="Trap",

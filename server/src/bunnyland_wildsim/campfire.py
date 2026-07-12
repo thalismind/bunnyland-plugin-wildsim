@@ -23,8 +23,8 @@ from bunnyland.core import (
     contents,
     spawn_entity,
 )
-from bunnyland.core.actions import ActionArgument, ActionDefinition
-from bunnyland.core.commands import CommandCost, Lane, SubmittedCommand
+from bunnyland.core.actions import ActionArgument, ActionDefinition, ActionEffort, effort_cost
+from bunnyland.core.commands import Lane, SubmittedCommand
 from bunnyland.core.ecs import container_of, parse_entity_id, replace_component
 from bunnyland.core.events import DomainEvent, EventVisibility, event_base
 from bunnyland.core.handlers import (
@@ -203,7 +203,7 @@ BUILD_FIRE_DEF = ActionDefinition(
     title="Build fire",
     description="Build and light a campfire in your current room.",
     lane=Lane.WORLD,
-    cost=CommandCost(action=1),
+    cost=effort_cost(action=ActionEffort.ROUTINE),
     arguments={},
 )
 
@@ -212,7 +212,7 @@ STOKE_FIRE_DEF = ActionDefinition(
     title="Stoke fire",
     description="Feed fuel to a nearby campfire, relighting it if it went out.",
     lane=Lane.WORLD,
-    cost=CommandCost(action=1),
+    cost=effort_cost(action=ActionEffort.ROUTINE),
     arguments={
         "item_id": ActionArgument(
             title="Campfire",

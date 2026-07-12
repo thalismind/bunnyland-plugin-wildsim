@@ -11,8 +11,8 @@ from __future__ import annotations
 from dataclasses import replace
 
 from bunnyland.core import IdentityComponent, contents
-from bunnyland.core.actions import ActionArgument, ActionDefinition
-from bunnyland.core.commands import CommandCost, Lane, SubmittedCommand
+from bunnyland.core.actions import ActionArgument, ActionDefinition, ActionEffort, effort_cost
+from bunnyland.core.commands import Lane, SubmittedCommand
 from bunnyland.core.ecs import replace_component
 from bunnyland.core.events import EventVisibility
 from bunnyland.core.handlers import (
@@ -123,7 +123,7 @@ TAN_HIDE_DEF = ActionDefinition(
     title="Tan hide",
     description="Cure a raw hide into a pelt that keeps you warm.",
     lane=Lane.WORLD,
-    cost=CommandCost(action=1),
+    cost=effort_cost(action=ActionEffort.ROUTINE),
     arguments={
         "hide_id": ActionArgument(
             title="Hide",
