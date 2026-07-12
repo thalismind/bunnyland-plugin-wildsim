@@ -41,7 +41,7 @@ jobs:
 
       - name: Ruff (lint)
         working-directory: plugin/server
-        run: uv run --project ../../bunnyland-server --with "trimesh>=4.4" ruff check --output-format=github src tests
+        run: uv run --project ../../bunnyland-server --with "trimesh>=4.4" --with "fastapi>=0.110" ruff check --output-format=github src tests
 
       - name: Pytest (test report + coverage)
         working-directory: plugin/server
@@ -49,7 +49,7 @@ jobs:
           set -o pipefail
           mkdir -p reports
           PYTHONPATH="src:../../bunnyland-server/src:../../bunnyland-3d/server/src" \
-          uv run --project ../../bunnyland-server --with "trimesh>=4.4" -m pytest \
+          uv run --project ../../bunnyland-server --with "trimesh>=4.4" --with "fastapi>=0.110" -m pytest \
             --junit-xml=reports/junit.xml \
             --cov=src --cov-branch --cov-fail-under=95 \
             --cov-report=xml:reports/coverage.xml --cov-report=term \
