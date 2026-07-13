@@ -18,6 +18,7 @@ from bunnyland.core.handlers import HandlerContext
 from bunnyland.foundation.consumables.components import FoodComponent
 from bunnyland.foundation.environment.mechanics import CalendarComponent
 from bunnyland.foundation.storyteller.mechanics import IncidentComponent
+from conftest import execute_handler
 
 from bunnyland_wildsim.components import ScentComponent, TrackerComponent
 from bunnyland_wildsim.events import (
@@ -106,7 +107,7 @@ def _cmd(character_id, command_type, payload=None):
 
 def _run(handler_cls, actor, character, command_type, payload=None, epoch=0):
     ctx = HandlerContext(world=actor.world, epoch=epoch)
-    return handler_cls().execute(ctx, _cmd(character.id, command_type, payload))
+    return execute_handler(handler_cls(), ctx, _cmd(character.id, command_type, payload))
 
 
 def _inventory(world, character):

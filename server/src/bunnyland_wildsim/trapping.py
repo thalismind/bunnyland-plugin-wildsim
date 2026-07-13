@@ -17,7 +17,6 @@ from bunnyland.core import (
     Contains,
     IdentityComponent,
     contents,
-    spawn_entity,
 )
 from bunnyland.core.actions import ActionArgument, ActionDefinition, ActionEffort, effort_cost
 from bunnyland.core.commands import Lane, SubmittedCommand
@@ -26,10 +25,19 @@ from bunnyland.core.events import DomainEvent, EventVisibility, event_base
 from bunnyland.core.handlers import (
     HandlerContext,
     HandlerResult,
-    ok,
+    planned,
     rejected,
     require_character,
     require_reachable_entity,
+)
+from bunnyland.core.mutations import (
+    AddEdge,
+    AddEntity,
+    DeleteEntity,
+    EntityReference,
+    MutationPlan,
+    RemoveEdge,
+    SetComponent,
 )
 from pydantic.dataclasses import dataclass
 from relics import Component, Edge, Entity, World
@@ -38,7 +46,7 @@ from .components import ScentComponent
 from .events import GameBaggedEvent, GameTrappedEvent, TrapSetEvent
 from .seasons import season_scarcity
 from .spatial import room_of
-from .trophies import game_weight, spawn_game_meat, spawn_hide
+from .trophies import game_meat_components, game_weight, hide_components
 
 #: A freshly set trap must be down this long before it can catch (scaled up by scarcity).
 DEFAULT_DWELL_SECONDS = 3600
@@ -143,24 +151,29 @@ class SetTrapHandler:
         if room_id is None or not ctx.world.has_entity(room_id):
             return rejected("you have nowhere to set a trap")
         room = ctx.world.get_entity(room_id)
-        trap = spawn_entity(
-            ctx.world,
-            [
-                IdentityComponent(name="snare", kind="item", tags=("wildsim", "trap")),
-                TrapComponent(set_epoch=ctx.epoch),
-            ],
-        )
-        room.add_relationship(Contains(mode=ContainmentMode.ROOM_CONTENT), trap.id)
-        return ok(
-            TrapSetEvent(
+        trap = EntityReference()
+        return planned(
+            MutationPlan(
+                (
+                    AddEntity(
+                        (
+                            IdentityComponent(name="snare", kind="item", tags=("wildsim", "trap")),
+                            TrapComponent(set_epoch=ctx.epoch),
+                        ),
+                        reference=trap,
+                    ),
+                    AddEdge(room.id, trap, Contains(mode=ContainmentMode.ROOM_CONTENT)),
+                )
+            ),
+            lambda: TrapSetEvent(
                 **ctx.event_base(
                     visibility=EventVisibility.ROOM,
                     actor_id=str(character_id),
                     room_id=str(room_id),
-                    target_ids=(str(trap.id),),
-                    trap_id=str(trap.id),
+                    target_ids=(str(trap.require()),),
+                    trap_id=str(trap.require()),
                 )
-            )
+            ),
         )
 
 
@@ -189,37 +202,49 @@ class CheckTrapHandler:
         if not trap.sprung:
             return rejected("the trap is empty and still set")
 
-        species, weight = self._harvest_target(ctx, trap_entity, trap)
-        meat = spawn_game_meat(ctx.world, species=species, weight=weight)
-        hide = spawn_hide(ctx.world, species=species, weight=weight)
-        for item in (meat, hide):
-            character.add_relationship(Contains(mode=ContainmentMode.INVENTORY), item.id)
-        replace_component(
-            trap_entity,
-            replace(trap, sprung=False, caught_species="", set_epoch=ctx.epoch),
-        )
+        species, weight, creature_id = self._harvest_target(ctx, trap_entity, trap)
+        meat = EntityReference()
+        hide = EntityReference()
+        operations = [
+            AddEntity(game_meat_components(species=species, weight=weight), reference=meat),
+            AddEntity(hide_components(species=species, weight=weight), reference=hide),
+            AddEdge(character.id, meat, Contains(mode=ContainmentMode.INVENTORY)),
+            AddEdge(character.id, hide, Contains(mode=ContainmentMode.INVENTORY)),
+            SetComponent(
+                trap_entity.id,
+                replace(trap, sprung=False, caught_species="", set_epoch=ctx.epoch),
+            ),
+        ]
+        if creature_id is not None:
+            operations.extend(
+                (
+                    RemoveEdge(trap_entity.id, creature_id, TrappedIn),
+                    DeleteEntity(creature_id),
+                )
+            )
         room = room_of(ctx.world, target_id)
-        return ok(
-            GameBaggedEvent(
+        return planned(
+            MutationPlan(tuple(operations)),
+            lambda: GameBaggedEvent(
                 **ctx.event_base(
                     visibility=EventVisibility.ROOM,
                     actor_id=str(character_id),
                     room_id=str(room.id) if room is not None else None,
-                    target_ids=(str(meat.id), str(hide.id)),
+                    target_ids=(str(meat.require()), str(hide.require())),
                     hunter_id=str(character_id),
                     species=species,
                     weight=weight,
-                    trophy_id=str(hide.id),
-                    game_id=str(meat.id),
+                    trophy_id=str(hide.require()),
+                    game_id=str(meat.require()),
                     method="trap",
                 )
-            )
+            ),
         )
 
     def _harvest_target(
         self, ctx: HandlerContext, trap_entity: Entity, trap: TrapComponent
-    ) -> tuple[str, float]:
-        """Resolve the caught species/weight and remove the held creature if it still lives."""
+    ) -> tuple[str, float, object | None]:
+        """Resolve the caught species/weight and the held creature, if it still lives."""
         for _edge, creature_id in trap_entity.get_relationships(TrappedIn):
             creature = ctx.world.get_entity(creature_id)
             strength = (
@@ -228,11 +253,9 @@ class CheckTrapHandler:
                 else 1.0
             )
             weight = game_weight(strength)
-            trap_entity.remove_relationship(TrappedIn, creature_id)
-            ctx.world.remove(creature_id)
-            return trap.caught_species or "game", weight
+            return trap.caught_species or "game", weight, creature_id
         # The creature vanished before harvest; fall back to the recorded species.
-        return trap.caught_species or "game", FALLBACK_PREY_WEIGHT
+        return trap.caught_species or "game", FALLBACK_PREY_WEIGHT, None
 
 
 SET_TRAP_DEF = ActionDefinition(

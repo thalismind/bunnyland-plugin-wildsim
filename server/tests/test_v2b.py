@@ -18,6 +18,7 @@ from bunnyland.core.ecs import replace_component
 from bunnyland.core.handlers import HandlerContext
 from bunnyland.foundation.environment.mechanics import CalendarComponent
 from bunnyland.prompts.context import ComponentPromptContext, PromptPerspective
+from conftest import execute_handler
 
 from bunnyland_wildsim.components import ScentComponent
 from bunnyland_wildsim.events import GameBaggedEvent, GameTrappedEvent
@@ -59,7 +60,11 @@ def _cmd(cid, ct, payload=None):
 
 
 def _exec(handler_cls, actor, cid, ct, payload=None):
-    return handler_cls().execute(HandlerContext(world=actor.world, epoch=0), _cmd(cid, ct, payload))
+    return execute_handler(
+        handler_cls(),
+        HandlerContext(world=actor.world, epoch=0),
+        _cmd(cid, ct, payload),
+    )
 
 
 def _reason(handler_cls, actor, cid, ct, payload=None):

@@ -64,16 +64,16 @@ def spawn_game_meat(world: World, *, species: str, weight: float) -> Entity:
     """Spawn a portion of fresh game: edible (feeds core hunger) and a donatable trophy."""
     return spawn_entity(
         world,
-        [
-            IdentityComponent(
-                name=f"{species} meat", kind="item", tags=("wildsim", "food", "game")
-            ),
-            PortableComponent(),
-            FoodComponent(nutrition=GAME_NUTRITION, satiety=GAME_SATIETY, raw=True),
-            TrophyComponent(
-                species=species, category="game", rarity=rarity_for(weight), weight=weight
-            ),
-        ],
+        game_meat_components(species=species, weight=weight),
+    )
+
+
+def game_meat_components(*, species: str, weight: float) -> tuple[Component, ...]:
+    return (
+        IdentityComponent(name=f"{species} meat", kind="item", tags=("wildsim", "food", "game")),
+        PortableComponent(),
+        FoodComponent(nutrition=GAME_NUTRITION, satiety=GAME_SATIETY, raw=True),
+        TrophyComponent(species=species, category="game", rarity=rarity_for(weight), weight=weight),
     )
 
 
@@ -81,14 +81,18 @@ def spawn_hide(world: World, *, species: str, weight: float) -> Entity:
     """Spawn a raw hide: tannable into a pelt, and a donatable trophy in its own right."""
     return spawn_entity(
         world,
-        [
-            IdentityComponent(name=f"{species} hide", kind="item", tags=("wildsim", "hide")),
-            PortableComponent(),
-            HideComponent(species=species),
-            TrophyComponent(
-                species=species, category="trophy", rarity=rarity_for(weight), weight=weight
-            ),
-        ],
+        hide_components(species=species, weight=weight),
+    )
+
+
+def hide_components(*, species: str, weight: float) -> tuple[Component, ...]:
+    return (
+        IdentityComponent(name=f"{species} hide", kind="item", tags=("wildsim", "hide")),
+        PortableComponent(),
+        HideComponent(species=species),
+        TrophyComponent(
+            species=species, category="trophy", rarity=rarity_for(weight), weight=weight
+        ),
     )
 
 
@@ -97,6 +101,8 @@ __all__ = [
     "GAME_SATIETY",
     "TrophyComponent",
     "game_weight",
+    "game_meat_components",
+    "hide_components",
     "rarity_for",
     "spawn_game_meat",
     "spawn_hide",

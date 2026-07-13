@@ -21,7 +21,6 @@ from bunnyland.core import (
     IdentityComponent,
     LightComponent,
     contents,
-    spawn_entity,
 )
 from bunnyland.core.actions import ActionArgument, ActionDefinition, ActionEffort, effort_cost
 from bunnyland.core.commands import Lane, SubmittedCommand
@@ -30,11 +29,12 @@ from bunnyland.core.events import DomainEvent, EventVisibility, event_base
 from bunnyland.core.handlers import (
     HandlerContext,
     HandlerResult,
-    ok,
+    planned,
     rejected,
     require_character,
     require_reachable_entity,
 )
+from bunnyland.core.mutations import AddEdge, AddEntity, EntityReference, MutationPlan, SetComponent
 from relics import Entity, World
 
 from .components import CampfireComponent
@@ -135,25 +135,36 @@ class BuildFireHandler:
                 fire = item.get_component(CampfireComponent)
                 if fire.lit and fire.fuel > 0.0:
                     return rejected("there is already a fire burning here")
-        fire_item = spawn_entity(
-            ctx.world,
-            [
-                IdentityComponent(name="campfire", kind="item", tags=("wildsim",)),
-                CampfireComponent(lit=True, fuel=BUILD_FUEL, last_updated_epoch=ctx.epoch),
-            ],
-        )
-        room.add_relationship(Contains(mode=ContainmentMode.ROOM_CONTENT), fire_item.id)
-        return ok(
-            FireBuiltEvent(
+        fire_item = EntityReference()
+        return planned(
+            MutationPlan(
+                (
+                    AddEntity(
+                        (
+                            IdentityComponent(name="campfire", kind="item", tags=("wildsim",)),
+                            CampfireComponent(
+                                lit=True, fuel=BUILD_FUEL, last_updated_epoch=ctx.epoch
+                            ),
+                        ),
+                        reference=fire_item,
+                    ),
+                    AddEdge(
+                        room.id,
+                        fire_item,
+                        Contains(mode=ContainmentMode.ROOM_CONTENT),
+                    ),
+                )
+            ),
+            lambda: FireBuiltEvent(
                 **ctx.event_base(
                     visibility=EventVisibility.ROOM,
                     actor_id=str(character_id),
                     room_id=str(room_id),
-                    target_ids=(str(fire_item.id),),
-                    item_id=str(fire_item.id),
+                    target_ids=(str(fire_item.require()),),
+                    item_id=str(fire_item.require()),
                     fuel=BUILD_FUEL,
                 )
-            )
+            ),
         )
 
 
@@ -180,11 +191,21 @@ class StokeFireHandler:
             return rejected("that is not a campfire")
         fire = item.get_component(CampfireComponent)
         new_fuel = min(MAX_FUEL, fire.fuel + STOKE_FUEL)
-        replace_component(
-            item, replace(fire, lit=True, fuel=new_fuel, last_updated_epoch=ctx.epoch)
-        )
         room = room_of(ctx.world, item.id)
-        return ok(
+        return planned(
+            MutationPlan(
+                (
+                    SetComponent(
+                        item.id,
+                        replace(
+                            fire,
+                            lit=True,
+                            fuel=new_fuel,
+                            last_updated_epoch=ctx.epoch,
+                        ),
+                    ),
+                )
+            ),
             FireStokedEvent(
                 **ctx.event_base(
                     visibility=EventVisibility.ROOM,
@@ -194,7 +215,7 @@ class StokeFireHandler:
                     item_id=str(target_id),
                     fuel=new_fuel,
                 )
-            )
+            ),
         )
 
 

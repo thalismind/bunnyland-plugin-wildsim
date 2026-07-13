@@ -86,16 +86,19 @@ def test_models_convert_and_groups_are_stable_edge_biased(tmp_path, monkeypatch)
     trees = next(
         item
         for item in first["decorations"]
-        if item.get("decoration_source3d", {}).get("role")
-        == "bunnyland.wildsim/deciduous-trees"
+        if item.get("decoration_source3d", {}).get("role") == "bunnyland.wildsim/deciduous-trees"
     )["prop_group3d"]["instances"]
 
     assert groups["bunnyland.wildsim/berry-bushes"].count == 9
     assert groups["bunnyland.wildsim/deciduous-trees"].count == 12
     assert first == second
     assert all(
-        min(instance["position"]["x"], instance["position"]["z"],
-            16 - instance["position"]["x"], 16 - instance["position"]["z"])
+        min(
+            instance["position"]["x"],
+            instance["position"]["z"],
+            16 - instance["position"]["x"],
+            16 - instance["position"]["z"],
+        )
         == 2.0
         for instance in trees
     )

@@ -15,6 +15,7 @@ from bunnyland.core.commands import CommandCost, Lane, build_submitted_command
 from bunnyland.core.handlers import HandlerContext
 from bunnyland.foundation.meters.mechanics import Meter
 from bunnyland.prompts.context import ComponentPromptContext, PromptPerspective
+from conftest import execute_handler
 
 from bunnyland_wildsim.components import CampfireComponent, ResourceNodeComponent, WarmthComponent
 from bunnyland_wildsim.tanning import HideComponent, PeltComponent, TanHideHandler
@@ -78,6 +79,6 @@ def test_tan_a_hide_without_an_identity():
         lane=Lane.WORLD,
         payload={"hide_id": str(hide.id)},
     )
-    result = TanHideHandler().execute(HandlerContext(world=world, epoch=0), command)
+    result = execute_handler(TanHideHandler(), HandlerContext(world=world, epoch=0), command)
     assert result.ok
     assert hide.has_component(PeltComponent) and not hide.has_component(HideComponent)

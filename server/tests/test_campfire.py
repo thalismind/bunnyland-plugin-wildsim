@@ -14,6 +14,7 @@ from bunnyland.core import (
 )
 from bunnyland.core.commands import CommandCost, Lane, build_submitted_command
 from bunnyland.core.handlers import HandlerContext
+from conftest import execute_handler
 
 from bunnyland_wildsim import CampfireComponent, CampfireConsequence
 from bunnyland_wildsim.campfire import BuildFireHandler, StokeFireHandler
@@ -58,7 +59,7 @@ def _campfire_in(actor, room):
 def test_build_fire_creates_a_lit_campfire():
     actor, room, holder = _world()
 
-    result = BuildFireHandler().execute(_ctx(actor), _cmd(holder.id, "build-fire", {}))
+    result = execute_handler(BuildFireHandler(), _ctx(actor), _cmd(holder.id, "build-fire", {}))
 
     assert result.ok
     fire = _campfire_in(actor, room)
@@ -68,9 +69,9 @@ def test_build_fire_creates_a_lit_campfire():
 
 def test_build_fire_rejects_when_a_fire_already_burns():
     actor, room, holder = _world()
-    BuildFireHandler().execute(_ctx(actor), _cmd(holder.id, "build-fire", {}))
+    execute_handler(BuildFireHandler(), _ctx(actor), _cmd(holder.id, "build-fire", {}))
 
-    result = BuildFireHandler().execute(_ctx(actor), _cmd(holder.id, "build-fire", {}))
+    result = execute_handler(BuildFireHandler(), _ctx(actor), _cmd(holder.id, "build-fire", {}))
 
     assert not result.ok
     assert result.reason == "there is already a fire burning here"
@@ -82,7 +83,7 @@ def test_build_fire_rejects_without_a_room():
         actor.world, [IdentityComponent(name="Nomad", kind="character"), CharacterComponent()]
     )
 
-    result = BuildFireHandler().execute(_ctx(actor), _cmd(loner.id, "build-fire", {}))
+    result = execute_handler(BuildFireHandler(), _ctx(actor), _cmd(loner.id, "build-fire", {}))
 
     assert not result.ok
     assert result.reason == "you have nowhere to build a fire"
@@ -91,7 +92,7 @@ def test_build_fire_rejects_without_a_room():
 def test_build_fire_rejects_invalid_character():
     actor, _room, _holder = _world()
 
-    result = BuildFireHandler().execute(_ctx(actor), _cmd("???", "build-fire", {}))
+    result = execute_handler(BuildFireHandler(), _ctx(actor), _cmd("???", "build-fire", {}))
 
     assert not result.ok
     assert result.reason == "invalid character id"
@@ -102,8 +103,8 @@ def test_stoke_fire_adds_fuel():
     fire = spawn_entity(actor.world, [CampfireComponent(lit=True, fuel=1.0)])
     room.add_relationship(Contains(mode=ContainmentMode.ROOM_CONTENT), fire.id)
 
-    result = StokeFireHandler().execute(
-        _ctx(actor), _cmd(holder.id, "stoke-fire", {"item_id": str(fire.id)})
+    result = execute_handler(
+        StokeFireHandler(), _ctx(actor), _cmd(holder.id, "stoke-fire", {"item_id": str(fire.id)})
     )
 
     assert result.ok
@@ -115,8 +116,8 @@ def test_stoke_fire_relights_a_dead_fire():
     fire = spawn_entity(actor.world, [CampfireComponent(lit=False, fuel=0.0)])
     room.add_relationship(Contains(mode=ContainmentMode.ROOM_CONTENT), fire.id)
 
-    StokeFireHandler().execute(
-        _ctx(actor), _cmd(holder.id, "stoke-fire", {"item_id": str(fire.id)})
+    execute_handler(
+        StokeFireHandler(), _ctx(actor), _cmd(holder.id, "stoke-fire", {"item_id": str(fire.id)})
     )
 
     assert fire.get_component(CampfireComponent).lit is True
@@ -129,8 +130,8 @@ def test_stoke_fire_rejects_non_campfire():
     )
     room.add_relationship(Contains(mode=ContainmentMode.ROOM_CONTENT), log.id)
 
-    result = StokeFireHandler().execute(
-        _ctx(actor), _cmd(holder.id, "stoke-fire", {"item_id": str(log.id)})
+    result = execute_handler(
+        StokeFireHandler(), _ctx(actor), _cmd(holder.id, "stoke-fire", {"item_id": str(log.id)})
     )
 
     assert not result.ok
@@ -143,8 +144,8 @@ def test_stoke_fire_rejects_unreachable_target():
     fire = spawn_entity(actor.world, [CampfireComponent(lit=True, fuel=1.0)])
     far_room.add_relationship(Contains(mode=ContainmentMode.ROOM_CONTENT), fire.id)
 
-    result = StokeFireHandler().execute(
-        _ctx(actor), _cmd(holder.id, "stoke-fire", {"item_id": str(fire.id)})
+    result = execute_handler(
+        StokeFireHandler(), _ctx(actor), _cmd(holder.id, "stoke-fire", {"item_id": str(fire.id)})
     )
 
     assert not result.ok

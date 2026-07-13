@@ -13,16 +13,16 @@ from dataclasses import replace
 from bunnyland.core import IdentityComponent, contents
 from bunnyland.core.actions import ActionArgument, ActionDefinition, ActionEffort, effort_cost
 from bunnyland.core.commands import Lane, SubmittedCommand
-from bunnyland.core.ecs import replace_component
 from bunnyland.core.events import EventVisibility
 from bunnyland.core.handlers import (
     HandlerContext,
     HandlerResult,
-    ok,
+    planned,
     rejected,
     require_character,
     require_reachable_entity,
 )
+from bunnyland.core.mutations import MutationPlan, RemoveComponent, SetComponent
 from bunnyland.prompts.context import ComponentPromptContext
 from pydantic.dataclasses import dataclass
 from relics import Component, Entity, World
@@ -94,16 +94,22 @@ class TanHideHandler:
             return rejected("that is not a hide to tan")
 
         species = hide.get_component(HideComponent).species
-        hide.remove_component(HideComponent)
         pelt = PeltComponent(species=species)
-        replace_component(hide, pelt)
+        operations = [
+            RemoveComponent(hide.id, HideComponent),
+            SetComponent(hide.id, pelt),
+        ]
         if hide.has_component(IdentityComponent):
             identity = hide.get_component(IdentityComponent)
-            replace_component(
-                hide, replace(identity, name=f"{species} pelt", tags=(*identity.tags, "pelt"))
+            operations.append(
+                SetComponent(
+                    hide.id,
+                    replace(identity, name=f"{species} pelt", tags=(*identity.tags, "pelt")),
+                )
             )
         room = room_of(ctx.world, target_id)
-        return ok(
+        return planned(
+            MutationPlan(tuple(operations)),
             HideTannedEvent(
                 **ctx.event_base(
                     visibility=EventVisibility.ROOM,
@@ -114,7 +120,7 @@ class TanHideHandler:
                     pelt_id=str(target_id),
                     insulation=pelt.insulation,
                 )
-            )
+            ),
         )
 
 

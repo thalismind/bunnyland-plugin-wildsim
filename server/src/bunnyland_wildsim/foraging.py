@@ -15,20 +15,20 @@ from bunnyland.core import (
     Contains,
     IdentityComponent,
     PortableComponent,
-    spawn_entity,
 )
 from bunnyland.core.actions import ActionArgument, ActionDefinition, ActionEffort, effort_cost
 from bunnyland.core.commands import Lane, SubmittedCommand
-from bunnyland.core.ecs import container_of, replace_component
+from bunnyland.core.ecs import container_of
 from bunnyland.core.events import EventVisibility
 from bunnyland.core.handlers import (
     HandlerContext,
     HandlerResult,
-    ok,
+    planned,
     rejected,
     require_character,
     require_reachable_entity,
 )
+from bunnyland.core.mutations import AddEdge, AddEntity, EntityReference, MutationPlan, SetComponent
 
 from .components import ResourceNodeComponent
 from .events import ForagedEvent
@@ -73,33 +73,40 @@ class ForageHandler:
         ):
             return rejected("there is nothing ready to forage here yet")
 
-        item = spawn_entity(
-            ctx.world,
-            [
-                IdentityComponent(
-                    name=node.resource, kind="item", tags=("wildsim", node.yield_kind)
-                ),
-                PortableComponent(),
-            ],
-        )
-        character.add_relationship(Contains(mode=ContainmentMode.INVENTORY), item.id)
+        item = EntityReference()
         remaining = node.remaining - 1 if node.remaining is not None else None
-        replace_component(
-            node_entity, replace(node, last_foraged_epoch=ctx.epoch, remaining=remaining)
+        plan = MutationPlan(
+            (
+                AddEntity(
+                    (
+                        IdentityComponent(
+                            name=node.resource, kind="item", tags=("wildsim", node.yield_kind)
+                        ),
+                        PortableComponent(),
+                    ),
+                    reference=item,
+                ),
+                AddEdge(character.id, item, Contains(mode=ContainmentMode.INVENTORY)),
+                SetComponent(
+                    node_entity.id,
+                    replace(node, last_foraged_epoch=ctx.epoch, remaining=remaining),
+                ),
+            )
         )
         room = room_of(ctx.world, character_id)
-        return ok(
-            ForagedEvent(
+        return planned(
+            plan,
+            lambda: ForagedEvent(
                 **ctx.event_base(
                     visibility=EventVisibility.ROOM,
                     actor_id=str(character_id),
                     room_id=str(room.id) if room is not None else None,
                     target_ids=(str(target_id),),
                     node_id=str(target_id),
-                    item_id=str(item.id),
+                    item_id=str(item.require()),
                     resource=node.resource,
                 )
-            )
+            ),
         )
 
 
