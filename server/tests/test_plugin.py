@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from bunnyland.core.world_actor import WorldActor
-from bunnyland.plugins import apply_plugins
+from bunnyland.plugins import PluginRegistry, apply_plugins
+from bunnyland.simpacks.barbariansim.plugin import plugin as barbariansim_plugin
 
 from bunnyland_wildsim import (
     CampfireComponent,
@@ -72,3 +73,9 @@ def test_plugin_applies_and_registers_verbs():
         "check-trap",
         "tan-hide",
     } <= command_types
+
+
+def test_plugin_component_registry_coexists_with_barbarian_sim_traps():
+    registry = PluginRegistry((barbariansim_plugin(), _plugins()[0]))
+    assert "TrapComponent" in registry.components
+    assert "SnareComponent" in registry.components

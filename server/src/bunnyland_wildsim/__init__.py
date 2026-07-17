@@ -53,6 +53,7 @@ from .tanning import HideComponent, PeltComponent, TanHideHandler, total_insulat
 from .trapping import (
     CheckTrapHandler,
     SetTrapHandler,
+    SnareComponent,
     TrapComponent,
     TrappedIn,
     TrappingConsequence,
@@ -88,6 +89,7 @@ __all__ = [
     "ScentConsequence",
     "ScentTrailComponent",
     "SetTrapHandler",
+    "SnareComponent",
     "StokeFireHandler",
     "TanHideHandler",
     "TrackerComponent",

@@ -56,13 +56,17 @@ FALLBACK_PREY_WEIGHT = 5.0
 
 
 @dataclass(frozen=True)
-class TrapComponent(Component):
+class SnareComponent(Component):
     """A set snare in a room. Once ``sprung`` it holds a creature via a :class:`TrappedIn` edge."""
 
     set_epoch: int = 0
     dwell_seconds: int = DEFAULT_DWELL_SECONDS
     sprung: bool = False
     caught_species: str = ""
+
+
+# Keep the original import surface while giving the ECS type a globally unique name.
+TrapComponent = SnareComponent
 
 
 @dataclass(frozen=True)
@@ -300,6 +304,7 @@ __all__ = [
     "TRAPPING_ACTION_HANDLERS",
     "CheckTrapHandler",
     "SetTrapHandler",
+    "SnareComponent",
     "TrapComponent",
     "TrappedIn",
     "TrappingConsequence",
