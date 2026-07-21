@@ -3,11 +3,11 @@ name = "bunnyland-wildsim"
 version = "0.2.0"
 description = "Out-of-tree Bunnyland plugin: a wilderness survival pack (scent trails, cold & warmth, campfires, foraging)."
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.12,<3.15"
 dependencies = [
-    "bunnyland",
+    "bunnyland>=1.0.0rc2,<2",
     "pydantic>=2.0",
-    "relics",
+    "relics-ecs>=0.1.1,<0.2",
 ]
 
 [project.optional-dependencies]
