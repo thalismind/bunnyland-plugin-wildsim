@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from bunnyland.core.world_actor import WorldActor
+from bunnyland.foundation.environment.plugin import plugin as environment_plugin
 from bunnyland.plugins import PluginRegistry, apply_plugins
 from bunnyland.simpacks.barbariansim.plugin import plugin as barbariansim_plugin
 
@@ -56,13 +57,13 @@ def test_plugin_is_v2():
         assert component in plugin.ecs.components
     # Optional synergy with the fortune pack is a recommendation, never a hard requirement.
     assert plugin.dependencies.recommends == ("bunnyland.fortunesim",)
-    assert plugin.dependencies.requires == ()
+    assert plugin.dependencies.requires == ("bunnyland.environment",)
 
 
 def test_plugin_applies_and_registers_verbs():
     actor = WorldActor()
-    applied = apply_plugins(_plugins(), actor)
-    assert applied[0].id == PLUGIN_ID
+    applied = apply_plugins([environment_plugin(), *_plugins()], actor)
+    assert applied[-1].id == PLUGIN_ID
     command_types = {definition.command_type for definition in actor.action_definitions()}
     assert {
         "build-fire",

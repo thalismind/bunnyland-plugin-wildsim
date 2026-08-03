@@ -6,6 +6,7 @@ import sys
 
 import pytest
 from bunnyland.core import WorldActor
+from bunnyland.foundation.environment.plugin import plugin as environment_plugin
 from bunnyland.foundation.media.plugin import plugin as media_plugin
 from bunnyland.plugins import apply_plugins
 from bunnyland.worldgen import RoomSpec, WorldProposal, instantiate
@@ -18,7 +19,7 @@ from bunnyland_wildsim.plugin import plugin as wild_plugin
 def _plugins_3d():
     from bunnyland_3d.plugin import plugin as plugin_3d
 
-    return [media_plugin(), plugin_3d(), wild_plugin()]
+    return [environment_plugin(), media_plugin(), plugin_3d(), wild_plugin()]
 
 
 def _room(actor, spec):
@@ -30,7 +31,7 @@ def test_plugin_stays_independent_when_3d_is_disabled():
     sys.modules.pop("bunnyland_3d", None)
     actor = WorldActor()
 
-    apply_plugins([wild_plugin()], actor)
+    apply_plugins([environment_plugin(), wild_plugin()], actor)
 
     assert "bunnyland_3d" not in sys.modules
     assert wild_plugin().dependencies.integrates_with == ("bunnyland.3d",)
@@ -39,7 +40,7 @@ def test_plugin_stays_independent_when_3d_is_disabled():
 @pytest.mark.parametrize("biome", ["forest", "misty woodland", "rain jungle"])
 def test_forest_and_berry_predicates(biome):
     actor = WorldActor()
-    apply_plugins([wild_plugin()], actor)
+    apply_plugins([environment_plugin(), wild_plugin()], actor)
     room = _room(actor, RoomSpec(key="wild", title="Wilds", biome=biome))
 
     assert forest_room(room)
@@ -49,7 +50,7 @@ def test_forest_and_berry_predicates(biome):
 
 def test_predicates_reject_indoor_and_nonfruit_resources():
     actor = WorldActor()
-    apply_plugins([wild_plugin()], actor)
+    apply_plugins([environment_plugin(), wild_plugin()], actor)
     indoor = _room(actor, RoomSpec(key="cabin", title="Cabin", biome="forest", indoor=True))
     tundra = _room(actor, RoomSpec(key="tundra", title="Tundra", biome="tundra"))
 

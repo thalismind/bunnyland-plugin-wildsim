@@ -66,7 +66,9 @@ def plugin() -> Plugin:
         default_enabled=True,
         # Optional synergy: fortunesim's luck gently nudges hunt/trap odds when present.
         dependencies=DependencyContribution(
-            recommends=("bunnyland.fortunesim",), integrates_with=("bunnyland.3d",)
+            requires=("bunnyland.environment",),
+            recommends=("bunnyland.fortunesim",),
+            integrates_with=("bunnyland.3d",),
         ),
         ecs=EcsContribution(
             components=(

@@ -8,11 +8,13 @@ from bunnyland.core import (
     Contains,
     HealthComponent,
     IdentityComponent,
+    LightComponent,
     RoomComponent,
     WorldActor,
     spawn_entity,
 )
 from bunnyland.core.ecs import replace_component
+from bunnyland.foundation.environment.mechanics import ShelterComponent, WeatherComponent
 from bunnyland.foundation.meters.mechanics import with_value
 
 from bunnyland_wildsim import (
@@ -89,6 +91,33 @@ def test_sheltered_indoor_room_does_not_drain_warmth():
     WarmthConsequence().process(actor.world, HOUR)
 
     assert _warmth(character) == 80.0
+
+
+def test_partial_canonical_wind_shelter_proportionally_reduces_exposure_chill():
+    actor = WorldActor()
+    room = _cold_room(actor.world, biome="meadow")
+    character = _character(actor.world, room)
+    baseline = room_chill(actor.world, room, character)
+    room.add_component(ShelterComponent(wind_protection=0.5))
+
+    assert room_chill(actor.world, room, character) == baseline / 2
+
+
+def test_full_wind_shelter_blocks_outdoor_weather_and_night_but_not_biome_cold():
+    actor = WorldActor()
+    clock = spawn_entity(actor.world, [WeatherComponent(condition="storm", intensity=1.0)])
+    room = spawn_entity(
+        actor.world,
+        [
+            RoomComponent(title="Alpine lean-to", biome="alpine"),
+            LightComponent(level=0.1),
+            ShelterComponent(wind_protection=1.0),
+        ],
+    )
+    character = _character(actor.world, room)
+
+    assert clock.has_component(WeatherComponent)
+    assert room_chill(actor.world, room, character) == 0.6
 
 
 def test_freezing_character_takes_health_damage():

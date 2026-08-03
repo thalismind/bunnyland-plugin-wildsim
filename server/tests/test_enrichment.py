@@ -1,6 +1,7 @@
 import asyncio
 
 from bunnyland.core import WorldActor
+from bunnyland.foundation.environment.plugin import plugin as environment_plugin
 from bunnyland.plugins import apply_plugins
 from bunnyland.worldgen import CharacterSpec, RoomSpec, WorldProposal, instantiate
 
@@ -10,7 +11,7 @@ from bunnyland_wildsim.plugin import bunnyland_plugins as _plugins
 
 def _world(*, room=None, character=None):
     actor = WorldActor()
-    apply_plugins(_plugins(), actor)
+    apply_plugins([environment_plugin(), *_plugins()], actor)
     result = asyncio.run(
         instantiate(
             actor,

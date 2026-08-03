@@ -15,7 +15,7 @@ from bunnyland.core import HealthComponent, LightComponent, RoomComponent, conte
 from bunnyland.core.components import DeadComponent, SuspendedComponent
 from bunnyland.core.ecs import replace_component
 from bunnyland.core.events import DomainEvent, EventVisibility, event_base
-from bunnyland.foundation.environment.mechanics import WeatherComponent
+from bunnyland.foundation.environment.mechanics import WeatherComponent, resolve_shelter_protection
 from bunnyland.foundation.meters.mechanics import with_value
 from relics import Entity, World
 
@@ -66,7 +66,7 @@ def _weather_condition(world: World) -> str:
     return "clear"
 
 
-def room_chill(world: World, room: Entity | None) -> float:
+def room_chill(world: World, room: Entity | None, character: Entity | None = None) -> float:
     """Per-hour chill pressure for a room.
 
     Positive drains warmth; negative (a lit fire) restores it. ``1.0`` is a full-strength
@@ -78,13 +78,16 @@ def room_chill(world: World, room: Entity | None) -> float:
         return -1.0  # a fire actively warms the room
     room_comp = room.get_component(RoomComponent) if room.has_component(RoomComponent) else None
     chill = 0.0
-    sheltered = room_comp is not None and room_comp.indoor
-    if not sheltered:
-        chill += 0.4  # base exposure of being outdoors
-        chill += COLD_WEATHER.get(_weather_condition(world), 0.0)
-        if room.has_component(LightComponent):
-            if room.get_component(LightComponent).level < NIGHT_LIGHT_LEVEL:
-                chill += 0.4  # night cold
+    wind_exposure = 1.0 - resolve_shelter_protection(
+        world,
+        character.id if character is not None else None,
+        room.id,
+    ).wind_protection
+    chill += 0.4 * wind_exposure  # base exposure of being outdoors
+    chill += COLD_WEATHER.get(_weather_condition(world), 0.0) * wind_exposure
+    if room.has_component(LightComponent):
+        if room.get_component(LightComponent).level < NIGHT_LIGHT_LEVEL:
+            chill += 0.4 * wind_exposure  # night cold
     if room_comp is not None:
         biome = room_comp.biome.casefold()
         if any(term in biome for term in COLD_BIOME_TERMS):
@@ -109,7 +112,7 @@ class WarmthConsequence:
         last = warmth.last_updated_epoch if warmth.last_updated_epoch is not None else epoch
         hours = max(0.0, (epoch - last) / SECONDS_PER_HOUR)
         room = room_of(world, character.id)
-        chill = room_chill(world, room)
+        chill = room_chill(world, room, character)
         if chill > 0.0:
             # Carried pelts blunt the cold, but can never turn exposure into warming.
             chill = max(0.0, chill - total_insulation(world, character))
